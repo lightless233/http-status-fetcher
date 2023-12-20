@@ -61,17 +61,19 @@ func (engine *TaskBuilderEngine) worker() {
 		br := bufio.NewReader(fp)
 		for {
 			line, err := br.ReadString('\n')
-			if err == io.EOF {
-				break
-			} else if err != nil {
+			if err != nil && err != io.EOF {
 				sugarLogger.Errorf("Error when reading input file: %s, error: %+v", appConfig.InputFile, err)
-				continue
+				return
 			}
 
 			line = strings.TrimSpace(line)
 			// TODO 校验域名是否合法
 			*engine.taskChan <- line
 			successCount += 1
+
+			if err == io.EOF {
+				break
+			}
 		}
 
 		sugarLogger.Infof("%d tasks were successfully added.", successCount)
